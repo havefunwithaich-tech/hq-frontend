@@ -20,7 +20,7 @@ const GET_POSTS = gql`
 `;
 
 // サーバー側でビルド時に実行される関数 (SSG)
-export async function getServerSideProps() {
+export async function getStaticProps() {
   try {
     const data = await graphQLClient.request(GET_POSTS);
 
