@@ -1,8 +1,11 @@
-// hq-frontend/pages/api/stripe/webhook.js (デバッグ強化版)
+// hq-frontend/pages/api/stripe/webhook.js
 
 import { buffer } from 'micro';
 import stripe from '../../../lib/stripe';
+
+// 💡 更新用: GraphQL Mutation
 import { UPDATE_USER_DATA } from '../../../lib/graphql/mutations';
+// 💡 検索用: さっき修正した Query
 import { GET_USER_ID_BY_STRIPE_CUSTOMER } from '../../../lib/graphql/queries';
 
 export const config = {
@@ -12,6 +15,7 @@ export const config = {
 };
 
 const endpoint = process.env.WP_GRAPHQL_URL;
+// Tokenにダブルクォーテーションがついている前提で処理
 const authHeader = Buffer.from(`admin:${process.env.WP_USER_TOKEN}`).toString('base64');
 const graphQLHeaders = {
     'Content-Type': 'application/json',
@@ -24,9 +28,10 @@ async function sendGraphQLQuery(query, variables) {
         headers: graphQLHeaders,
         body: JSON.stringify({ query, variables }),
     });
+
     const result = await response.json();
     if (result.errors) {
-        console.error('❌ GraphQL Error:', JSON.stringify(result.errors));
+        console.error('❌ GraphQL Error:', result.errors);
         return null;
     }
     return result.data;
@@ -34,9 +39,12 @@ async function sendGraphQLQuery(query, variables) {
 
 // ユーザーIDを検索する関数
 async function findWPUserId(stripeCustomerId) {
+    // IDが空なら検索しない
     if (!stripeCustomerId) return null;
-    console.log(`🔎 Querying WP for Stripe ID: ${stripeCustomerId}`);
+
     const data = await sendGraphQLQuery(GET_USER_ID_BY_STRIPE_CUSTOMER, { stripeCustomerId });
+
+    // 新しいクエリ名 "user" に対応
     if (data && data.user) {
         return data.user.databaseId;
     }
@@ -44,7 +52,6 @@ async function findWPUserId(stripeCustomerId) {
 }
 
 async function sendGraphQLMutation(userId, stripeData) {
-    console.log(`📝 Mutating WP User ${userId} with data:`, stripeData);
     const success = await sendGraphQLQuery(UPDATE_USER_DATA, {
         id: userId,
         stripeCustomerId: stripeData.stripeCustomerId,
@@ -73,54 +80,53 @@ export default async function handler(req, res) {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // 🚨 ここで必ずログを出す（これで何が来ているか100%分かります）
-    console.log(`🔔 Webhook received! Type: ${event.type}`);
-
     const dataObject = event.data.object;
     let wp_user_database_id = null;
     let customerId = null;
     let statusToUpdate = 'active';
 
+    // イベントタイプに応じた処理
     switch (event.type) {
+        // ✅ 新規登録時
         case 'checkout.session.completed':
-            console.log(`➡️ Processing Checkout Session Completed`);
             customerId = dataObject.customer;
+            // メタデータからWPユーザーIDを直接取得
             if (dataObject.metadata && dataObject.metadata.wp_user_id) {
                 wp_user_database_id = dataObject.metadata.wp_user_id;
                 console.log(`✅ Found WP ID from metadata: ${wp_user_database_id}`);
-            } else {
-                console.warn(`⚠️ No WP ID in metadata for this session.`);
             }
             statusToUpdate = 'active';
             break;
 
+        // ✅ 更新・解約時
         case 'customer.subscription.updated':
         case 'customer.subscription.deleted':
         case 'invoice.payment_failed':
-            console.log(`➡️ Processing Subscription Update: ${event.type}`);
             customerId = dataObject.customer;
             statusToUpdate = (event.type === 'customer.subscription.deleted') ? 'cancelled' : dataObject.status;
+
+            // Stripe IDを使ってWPユーザーを検索
+            console.log(`🔍 Searching WP User for Stripe ID: ${customerId}`);
             wp_user_database_id = await findWPUserId(customerId);
             break;
 
-        // 💡 その他のイベントもログに出して無視する
         default:
-            console.log(`ℹ️ Ignored event type: ${event.type}`);
             return res.json({ received: true });
     }
 
     if (!wp_user_database_id) {
-        console.error(`❌ WP user not found (or metadata missing) for Stripe Customer ID: ${customerId}`);
-        return res.status(200).json({ received: true, message: "User not found" });
+        console.error(`❌ WP user not found for Stripe Customer ID: ${customerId}`);
+        return res.status(200).json({ received: true, message: "User not found, skipping update." });
     }
 
+    // GraphQLミューテーションの実行
     const success = await sendGraphQLMutation(wp_user_database_id, {
         stripeCustomerId: customerId,
         subscriptionStatus: statusToUpdate,
     });
 
     if (success) {
-        console.log(`✅ User ${wp_user_database_id} updated successfully!`);
+        console.log(`✅ User ${wp_user_database_id} updated successfully to: ${statusToUpdate}`);
     } else {
         console.error(`❌ Failed to update user ${wp_user_database_id}`);
     }
