@@ -408,7 +408,7 @@ export default function VideoListPage({ initialVideos, initialPageInfo, endpoint
 // SSG
 // ===============================================
 export async function getStaticProps() {
-  const endpoint = process.env.WP_GRAPHQL_URL;
+  const endpoint = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
   const client = new GraphQLClient(endpoint);
   try {
     const data = await client.request(GET_VIDEO_LIST, {
@@ -425,6 +425,17 @@ export async function getStaticProps() {
       revalidate: 60
     };
   } catch (err) {
-    return { props: { initialVideos: [], initialPageInfo: {}, endpoint } };
+    console.error("GQL fetch error in /videos:", err);
+    // endpointを渡す代わりに、その値（文字列）自体を渡すか、
+    // あるいは undefined を null に置き換えます。
+    const safeEndpoint = endpoint || null; 
+
+    return { 
+        props: { 
+            initialVideos: [], 
+            initialPageInfo: { hasNextPage: false, endCursor: null }, // 安全な初期値
+            endpoint: safeEndpoint 
+        } 
+    };
   }
 }

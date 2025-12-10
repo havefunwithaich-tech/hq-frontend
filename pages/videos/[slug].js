@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 // ===============================================
 // 設定：画像サーバー (WebP用)
 // ===============================================
-const IMAGE_BASE_URL = "https://havefunwithaich.com/images";
+const IMAGE_BASE_URL = "https://hq.havefunwithaich.com/images";
 
 // ===============================================
 // 設定：Stripeリンク
@@ -538,7 +538,7 @@ export default function VideoDetailPage({ post, neighbors }) {
 
 // SSG部分は変更なし
 export async function getStaticProps({ params }) {
-  const endpoint = process.env.WP_GRAPHQL_URL;
+  const endpoint = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
   const client = new GraphQLClient(endpoint);
   const slug = decodeURIComponent(params.slug);
   const data = await client.request(GET_BY_SLUG, { slug });
@@ -570,7 +570,7 @@ export async function getStaticProps({ params }) {
 }
 
 export async function getStaticPaths() {
-  const endpoint = process.env.WP_GRAPHQL_URL;
+  const endpoint = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
   const client = new GraphQLClient(endpoint);
   const data = await client.request(GET_ALL);
   const paths = data.portfolios.nodes.map((n) => {

@@ -237,3 +237,29 @@ export default function Home() {
     </div>
   );
 }
+
+export async function getServerSideProps() {
+  try {
+    // GraphQLやAPIからデータを取る場合
+    const res = await fetch("https://your-graphql-endpoint", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: `
+          query {
+            portfolios(first: 5) {
+              nodes { slug }
+            }
+          }
+        `,
+      }),
+    });
+
+    const json = await res.json();
+
+    return { props: { data: json.data } };
+  } catch (e) {
+    console.error("GraphQL fetch error:", e);
+    return { props: { data: null } };
+  }
+}

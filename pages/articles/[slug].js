@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
-const endpoint = process.env.WP_GRAPHQL_URL;
+const endpoint = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
 
 // User-Agentを追加してロボット扱い回避
 const graphQLClient = new GraphQLClient(endpoint, {
