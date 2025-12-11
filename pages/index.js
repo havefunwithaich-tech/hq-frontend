@@ -22,6 +22,15 @@ const NotificationSection = ({ latestPosts }) => (
     <div className="notification-content">
       <h2 className="section-title">RECENT NEWS & UPDATES</h2>
 
+      {/* ★修正: 新記事を常にトップに固定 ★ */}
+      <div className="notification-item" style={{ order: -1, background: '#1c1c1c' }}> 
+        <Link href="/site-built-in-2-weeks" className="notification-link link-highlight-red">
+          [HQ REPORT] SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN
+        </Link>
+        <span className="notification-date">DEC 11, 2025</span>
+      </div>
+      {/* ★修正ここまで ★ */}
+
       {latestPosts &&
         latestPosts.map((post) => (
           <div key={post.slug} className="notification-item">
