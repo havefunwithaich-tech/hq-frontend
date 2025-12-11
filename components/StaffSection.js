@@ -100,11 +100,23 @@ const StaffSection = () => {
         }
         .staff-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 30px;
           justify-content: center;
           align-items: stretch;
         }
+        /* タブレット（2 カラム） */
+        @media (max-width: 992px) {
+        .staff-grid {
+          grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        /* スマホ（1 カラム） */
+        @media (max-width: 600px) {
+       .staff-grid {
+         grid-template-columns: 1fr;
+         }
+       }
         .staff-card {
           background: #1a1a1a;
           border: 1px solid #333;
