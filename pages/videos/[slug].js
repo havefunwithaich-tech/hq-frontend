@@ -41,7 +41,7 @@ const DynamicAdSlot = dynamic(() => Promise.resolve(AdSlotComponent), { ssr: fal
 const buildVideoUrl = (slug, type, isLandscape) => {
   let clean = slug.replace(/^\[f\]/i, "");
   const folder = isLandscape ? "landscape" : "portrait";
-  const base = `https://hq.havefunwithaich.com/videos/${folder}/`;
+  const base = `${process.env.NEXT_PUBLIC_VIDEO_BASE_URL}/videos/${folder}/`;
   if (type === "FHD") return `${base}${clean}_1080.mp4`;
   if (type === "4K") return `${base}${clean}_2160.mp4`;
   return `${base}${clean}_720.mp4`;

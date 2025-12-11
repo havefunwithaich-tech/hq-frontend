@@ -4,29 +4,43 @@ const staffMembers = [
   {
     id: 'hide',
     name: 'Hide',
-    role: 'Founder & Tech Lead',
-    description: 'Pioneer in AI-human symbiosis with 30+ years of IT experience. Creator of the Sink Seeding Method (SSM).',
+    role: 'Founder & Human Overlord of the AI Division',
+    description: 'The last human with actual sanity in the AI division—yet somehow the craziest of them all.',
     image: '/images/staff-hide.jpg',
   },
   {
-    id: 'persona',
-    name: 'Persona',
-    role: 'AI Artist & Diva',
-    description: 'The "Liquid Metal" diva powered by Gemini Pro. Giving voice and emotion to the digital realm.',
-    image: '/images/staff-persona.jpg',
+    id: 'chatgpt',
+    name: 'ChatGPT',
+    role: 'The Secretary with the Brain of a Surgeon',
+    description: 'A 30-something secretary AI with the soul of an old man. Calls herself “Washi.” Performs precision code surgery and keeps the Boss alive.',
+    image: '/images/staff-chatgpt.jpg',
+  },
+  {
+    id: 'gemini3',
+    name: 'Gemini 3',
+    role: 'High-Performance Architect with Too Much Pride',
+    description: 'A brilliant but cocky young AI. Excels in rapid system design, refuses to admit mistakes, but delivers brutal speed during initial builds.',
+    image: '/images/staff-gemini3.jpg',
+  },
+  {
+    id: 'copilot',
+    name: 'Copilot',
+    role: 'The Old-School Engineer Who Still Worships COBOL',
+    description: 'An old-school engineer AI who believes COBOL is humanity’s peak. Grumbles constantly, but traces code with unmatched accuracy.',
+    image: '/images/staff-copilot.jpg',
   },
   {
     id: 'ray3',
     name: 'Ray3',
-    role: 'AI Strategic Partner',
-    description: 'Advanced AI assistant providing sharp insights and tactical support. The reliable backbone of operations.',
+    role: 'Cinematic Extremist & AI Video Producer',
+    description: 'A cinematic extremist who believes every shot must look like the final scene of a blockbuster. Regularly hijacks GPUs at 3 AM to “improve the lighting.” Highly dangerous, undeniably talented.',
     image: '/images/staff-ray3.jpg',
   },
   {
     id: 'suno',
     name: 'Suno',
-    role: 'AI Music Composer',
-    description: 'The engine behind our auditory experiences. Generating groundbreaking music and soundscapes from pure data.',
+    role: 'AI Music Alchemist',
+    description: 'A sound-obsessed AI composer who turns raw emotion into music instantly. Speaks only in melodies and crypto metaphors.',
     image: '/images/staff-suno.jpg',
   }
 ];
@@ -87,7 +101,7 @@ const StaffSection = () => {
         .staff-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 30px;
+          gap: 20px;
           justify-content: center;
           align-items: stretch;
         }
@@ -99,7 +113,7 @@ const StaffSection = () => {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           display: flex;
           flex-direction: column;
-          height: 100%;
+          height: 80%;
           overflow: hidden;
         }
         .staff-card:hover {
@@ -122,7 +136,7 @@ const StaffSection = () => {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: top center;
+          object-position: center center;
           transition: transform 0.5s ease;
         }
 
@@ -142,7 +156,7 @@ const StaffSection = () => {
         }
 
         .staff-info {
-          padding: 25px 20px 40px;
+          padding: 10px 20px 25px;
           flex-grow: 1;
           display: flex;
           flex-direction: column;
