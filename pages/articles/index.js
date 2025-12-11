@@ -1,5 +1,3 @@
-// hq-frontend/pages/articles/index.js
-
 import { GraphQLClient, gql } from 'graphql-request';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -8,14 +6,15 @@ const endpoint = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL || 'https://hq.havefunwi
 const graphQLClient = new GraphQLClient(endpoint);
 
 export async function getStaticProps() {
+  // ★修正: クエリ内で substring は使えないので、素直に content を取得します
   const query = gql`
     query GetArticles {
-      posts(first: 100) {
+      posts(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
         nodes {
           slug
           title
           date
-          excerpt
+          content 
           featuredImage {
             node {
               sourceUrl
@@ -34,6 +33,17 @@ export async function getStaticProps() {
     revalidate: 60,
   };
 }
+
+// ★追加: 本文から好きな長さの抜粋を作るヘルパー関数
+const createSnippet = (htmlContent, length = 150) => {
+  if (!htmlContent) return "";
+  // 1. HTMLタグを除去
+  let text = htmlContent.replace(/<[^>]+>/g, '');
+  // 2. 改行や連続する空白を整理
+  text = text.replace(/\s+/g, ' ').trim();
+  // 3. 指定文字数でカットし、末尾に ... をつける
+  return text.length > length ? text.substring(0, length) + '...' : text;
+};
 
 export default function Articles({ posts }) {
   const [visibleCount, setVisibleCount] = useState(6);
@@ -65,11 +75,12 @@ export default function Articles({ posts }) {
 
                 <div className="card-content">
                   <h3 className="card-title">{post.title}</h3>
-                  {/* excerptのHTMLタグを除去して表示 */}
-                  <div 
-                    className="card-excerpt"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt ? post.excerpt.substring(0, 80) + '...' : '' }}
-                  />
+                  
+                  {/* ★修正: 自作関数で長めの抜粋を表示（ここでは200文字に設定） */}
+                  <div className="card-excerpt">
+                     {createSnippet(post.content, 200)}
+                  </div>
+
                   <p className="card-date">
                     {new Date(post.date).toLocaleDateString()}
                   </p>
@@ -91,7 +102,6 @@ export default function Articles({ posts }) {
       {/* スタイルの定義 */}
       <style jsx>{`
         .articles-container {
-          /* ここで全体を少し内側に寄せる */
           padding: 40px 20px;
           max-width: 1200px;
           margin: 0 auto;
@@ -103,13 +113,12 @@ export default function Articles({ posts }) {
         .page-title {
           text-align: center;
           margin-bottom: 40px;
-          fontSize: 2.5rem;
+          font-size: 2.5rem;
           color: #fff;
         }
 
         .articles-grid {
           display: grid;
-          /* カードの最小幅を少し小さくして、モバイルでの収まりを良くする */
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
           gap: 30px;
           width: 100%;
@@ -182,6 +191,7 @@ export default function Articles({ posts }) {
           margin: 0;
           flex: 1;
           overflow: hidden;
+          line-height: 1.6;
         }
 
         .card-date {
@@ -209,19 +219,14 @@ export default function Articles({ posts }) {
           background-color: #444;
         }
 
-        /* ★モバイル向けの調整 */
         @media (max-width: 600px) {
           .articles-container {
-            /* ★ポイント: パディングで強制的に表示領域を狭くする */
             padding: 40px 15px; 
           }
-
           .articles-grid {
-            /* 1カラムにして確実に収める */
             grid-template-columns: 1fr;
             gap: 20px;
           }
-
           .page-title {
             font-size: 2rem;
           }

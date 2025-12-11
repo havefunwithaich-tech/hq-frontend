@@ -2,20 +2,25 @@ import Head from 'next/head';
 import StaffSection from '../components/StaffSection';
 import Link from 'next/link';
 
-// GraphQLクエリ: 最新記事を3件取得（多すぎるとレイアウトが崩れるので調整可能）
+// GraphQLクエリ: excerpt ではなく content (本文) を取得します
 const GET_HOME_DATA = `{ 
   posts(first: 3, where: { orderby: { field: DATE, order: DESC }, stati: [PUBLISH] }) { 
-    nodes { title slug date excerpt } 
+    nodes { title slug date content } 
   } 
 }`;
 
-// HTMLタグ除去 ＆ 文字実体参照の簡易デコード
-const stripHtml = (html) => {
+// ★改良版: HTMLタグ除去 ＆ 100文字でカットする関数
+const createSnippet = (html, length = 100) => {
   if (!html) return "";
-  let text = html.replace(/<[^>]+>/g, ''); 
+  // 1. HTMLタグを除去
+  let text = html.replace(/<[^>]+>/g, '');
+  // 2. 特殊文字の変換
   text = text.replace(/&#8230;/g, '...');   
-  text = text.replace(/&amp;/g, '&');       
-  return text.trim();
+  text = text.replace(/&amp;/g, '&');
+  // 3. 改行や連続スペースを整理
+  text = text.replace(/\s+/g, ' ').trim();
+  // 4. 指定文字数でカット
+  return text.length > length ? text.substring(0, length) + '...' : text;
 };
 
 const LaunchBanner = () => (
@@ -65,8 +70,9 @@ const NotificationSection = ({ latestPosts }) => {
                   {post.title}
                 </Link>
               </h3>
+              {/* ★ここで本文から100文字抜粋を作って表示 */}
               <p className="news-excerpt">
-                {stripHtml(post.excerpt)}
+                {createSnippet(post.content, 100)}
               </p>
               <span className="read-more">Read Article &rarr;</span>
             </div>
@@ -110,7 +116,7 @@ export default function Home({ data }) {
         html, body {
           background-color: #000;
           color: #fff;
-          font-family: 'Helvetica Neue', Arial, sans-serif; /* フォントを少し洗練 */
+          font-family: 'Helvetica Neue', Arial, sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
           text-align: left;
@@ -148,14 +154,13 @@ export default function Home({ data }) {
         </div>
       </footer>
 
-      {/* === CSS (ここを強化しました) === */}
+      {/* === CSS === */}
       <style jsx>{`
         .main-container { background-color: #000; color: #fff; }
 
         /* HERO Styles */
         .hero-section {
           position: relative;
-          overflow: visible;
           width: 100%;
           height: min(100vh, 720px);
           min-height: 500px;
@@ -165,7 +170,6 @@ export default function Home({ data }) {
         .hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .hero-overlay {
-          height: 100%;
           position: absolute; inset: 0;
           background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
           z-index: 1;
@@ -185,13 +189,13 @@ export default function Home({ data }) {
         }
 
         /* ====================== */
-        /* カードデザイン (強化版) */
+        /* カードデザイン */
         /* ====================== */
 
         .news-container {
           position: relative;
           z-index: 5;          
-         max-width: 1200px;
+          max-width: 1200px;
           margin: 0 auto;
           padding: 60px 20px;
           background-color: #000;
@@ -208,14 +212,13 @@ export default function Home({ data }) {
 
         .articles-grid {
           display: grid;
-          /* ここ重要: 320px以上のカードを敷き詰める */
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-         gap: 30px;
+          gap: 30px;
           width: 100%;
         }
 
         .news-card {
-          /* 背景色を明るくして見えるようにする */
+          /* 色はLayout.jsのGlobal CSSで制御されていますが、念のため指定 */
           background-color: #222; 
           border: 1px solid #444;
           border-radius: 12px;
@@ -224,8 +227,6 @@ export default function Home({ data }) {
           flex-direction: column;
           position: relative;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
-          
-          /* グリッドが効かない場合の保険（スマホなど） */
           margin-bottom: 0; 
         }
 
@@ -235,7 +236,7 @@ export default function Home({ data }) {
            transform: translateY(-5px);
         }
 
-        /* バッジ（飾り） */
+        /* バッジ */
         .card-badge {
           position: absolute;
           top: 15px; right: 15px;
@@ -271,8 +272,7 @@ export default function Home({ data }) {
           font-size: 0.95rem; color: #ccc;
           line-height: 1.6; margin-bottom: 25px;
           flex-grow: 1;
-          
-          /* 3行で省略 */
+          /* CSSによる行制限も残しておきます */
           display: -webkit-box;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
@@ -286,7 +286,6 @@ export default function Home({ data }) {
           display: inline-flex; align-items: center;
         }
         
-        /* カードの種類による微調整 */
         .fixed-card { border-left: 4px solid #00ccff; }
         .policy-card { border-left: 4px solid #ff4444; }
 
