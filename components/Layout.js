@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 
-// ★設定: ここにご自身の測定IDを入れてください
 const GA_MEASUREMENT_ID = 'G-PG1S76T9QW';
 
 export default function Layout({ children, title = 'havefunwithAIch Headquarters' }) {
@@ -29,21 +28,12 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
   const checkUser = () => {
     const storedUser = localStorage.getItem('hq_user');
     if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Failed to parse user", err);
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
+      try { setUser(JSON.parse(storedUser)); } catch (err) { setUser(null); }
+    } else { setUser(null); }
     setLoadingUser(false);
   };
 
-  useEffect(() => {
-    checkUser();
-  }, [router.pathname]);
+  useEffect(() => { checkUser(); }, [router.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('hq_token');
@@ -58,39 +48,25 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
         <title>{title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
-        <script>
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', {
-              page_path: window.location.pathname,
-              send_page_view: true
-            });
-          `}
-        </script>
-
+        <script>{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}', { page_path: window.location.pathname, send_page_view: true });
+        `}</script>
         <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
-        <script>
-          {`
-            window.googletag = window.googletag || {cmd: []};
-            googletag.cmd.push(function() {
-              googletag.pubads().enableSingleRequest();
-              googletag.enableServices();
-            });
-          `}
-        </script>
+        <script>{`
+          window.googletag = window.googletag || {cmd: []};
+          googletag.cmd.push(function() { googletag.pubads().enableSingleRequest(); googletag.enableServices(); });
+        `}</script>
       </Head>
 
       <header className="site-header">
         <div className="layout-container header-inner">
           <div className="header-left">
             <h1 className="site-logo">
-              <Link href="/" className="logo-link">
-                HQ.havefunwithAIch
-              </Link>
+              <Link href="/" className="logo-link">HQ.havefunwithAIch</Link>
             </h1>
             <nav className="main-nav">
               <Link href="/" className="nav-link">HOME</Link>
@@ -98,16 +74,11 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
               <Link href="/articles" className="nav-link">ARTICLES</Link>
             </nav>
           </div>
-
           <div className="header-right">
-            {loadingUser ? (
-              null
-            ) : user ? (
+            {loadingUser ? null : user ? (
               <div className="logged-in-area">
                 <span className="welcome-msg">Welcome, {user.username}</span>
-                <button onClick={handleLogout} className="btn btn-login">
-                  Logout
-                </button>
+                <button onClick={handleLogout} className="btn btn-login">Logout</button>
               </div>
             ) : (
               <>
@@ -119,6 +90,7 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
         </div>
       </header>
 
+      {/* 帯（layout-container） */}
       <main className="layout-container main-content">
         {children}
       </main>
@@ -129,7 +101,18 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
         </div>
       </footer>
 
-      <style jsx>{`
+      {/* ここでスタイルを一括管理します */}
+      <style jsx global>{`
+        body {
+          background-color: #000; /* サイト全体の背景は真っ黒 */
+          color: #fff;
+        }
+
+        #site-wrapper {
+          display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* 帯の設定：ここで色をつけます */
         .layout-container {
           width: 100%;
           max-width: 1200px;
@@ -138,216 +121,62 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
           box-sizing: border-box;
         }
 
-        #site-wrapper {
-          background-color: #333333;
-          color: #fff;
-          font-family: sans-serif;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-
         .site-header {
-          background-color: #2a2a2a;
-          border-bottom: 1px solid #2a2a2a;
-          width: 100%;
+          background-color: #1a1a1a; /* ヘッダーも少し明るく */
+          border-bottom: 1px solid #333;
+          width: 100%; flex-shrink: 0;
         }
 
-        .header-inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 15px;
-          padding-bottom: 15px;
-          flex-wrap: wrap;
-        }
-
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: 30px;
-          flex-wrap: wrap;
-        }
-
-        .site-logo {
-          margin: 0;
-          font-size: clamp(1.2rem, 4vw, 1.5em);
-          line-height: 1.2;
-        }
-
-        .logo-link {
-          color: #66ccff;
-          text-decoration: none;
-          font-weight: bold;
-        }
-
-        .main-nav {
-          display: flex;
-          gap: 20px;
-          flex-wrap: wrap;
-        }
-
-        .nav-link {
-          color: white;
-          text-decoration: none;
-          font-weight: 500;
-          white-space: nowrap;
-        }
-        .nav-link:hover {
-          color: #66ccff;
-        }
-
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .logged-in-area {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          width: 100%;
-        }
-
-        .welcome-msg {
-          color: #fff;
-          font-size: 0.9rem;
-          flex: 1;
-          text-align: right;
-          white-space: nowrap;
-        }
-
-        .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
-          padding: 0 16px;
-          border-radius: 4px;
-          font-size: 0.9rem;
-          white-space: nowrap;
-          cursor: pointer;
-          font-family: inherit;
-          box-sizing: border-box;
-          transition: background-color 0.2s;
-          min-height: 38px;
-          line-height: 1;
-        }
-
-        button.btn {
-          appearance: none;
-          -webkit-appearance: none;
-          background: transparent;
-          border: none;
-        }
-
-        .btn-login {
-          color: #fff;
-          border: 1px solid #666 !important;
-          background-color: transparent;
-        }
-        .btn-login:hover {
-          background-color: #444;
-        }
-
-        .btn-join {
-          background-color: #0070f3;
-          color: #fff;
-          border: 1px solid #0070f3;
-          font-weight: bold;
-        }
-        .btn-join:hover {
-          background-color: #005bb5;
-        }
-
+        /* メインコンテンツ（帯）の背景色設定 */
         .main-content {
           flex: 1;
-          padding-top: 40px;
-          padding-bottom: 40px;
+          width: 100%;
+          background-color: #0e0e0e; /* ★ここです！真っ黒ではなく「ほぼ黒」にして帯を見せます */
+          padding-top: 40px; padding-bottom: 60px;
         }
 
+        /* === 強制的にカードスタイルをここで定義 === */
+        /* index.jsで効かなくても、ここで定義すれば絶対効きます */
+        
+        .news-card {
+          background-color: #1c1c1c !important; /* カード背景：ダークグレー */
+          border: 1px solid #333 !important;      /* 枠線 */
+          border-radius: 8px;
+          overflow: hidden;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          margin-bottom: 20px; /* 万が一グリッドが効かなくてもくっつかないように */
+        }
+        
+        .news-card:hover {
+          background-color: #252525 !important;
+          border-color: #666 !important;
+          transform: translateY(-3px);
+        }
+
+        /* ヘッダー周りの細かいスタイル */
+        .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; flex-wrap: wrap; }
+        .header-left { display: flex; align-items: center; gap: 30px; }
+        .site-logo { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+        .logo-link { color: #66ccff; text-decoration: none; font-weight: bold; }
+        .main-nav { display: flex; gap: 20px; }
+        .nav-link { color: #ccc; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .nav-link:hover { color: #fff; }
+        .header-right, .logged-in-area { display: flex; align-items: center; gap: 15px; }
+        .welcome-msg { color: #ccc; font-size: 0.9rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; cursor: pointer; border: none; background: transparent; transition: background-color 0.2s; line-height: 1; }
+        .btn-login { color: #fff; border: 1px solid #666 !important; }
+        .btn-login:hover { background-color: #444; }
+        .btn-join { background-color: #0070f3; color: #fff; border: 1px solid #0070f3; font-weight: bold; }
+        .btn-join:hover { background-color: #005bb5; }
+        
         .site-footer {
-          border-top: 1px solid #444;
-          padding: 40px 0;
-          text-align: center;
-          font-size: 0.8em;
-          color: #888;
+          background-color: #050505; border-top: 1px solid #333; padding: 40px 0; text-align: center; color: #666; flex-shrink: 0;
         }
 
-        @media (max-width: 600px) {
-          .layout-container {
-            padding: 0 10px;
-          }
-
-          .header-inner {
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            gap: 15px;
-          }
-
-          .header-left {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
-          }
-
-          .main-nav {
-            gap: 10px;
-            flex-wrap: wrap;
-            width: 100%;
-          }
-
-          .nav-link {
-            white-space: normal;
-            font-size: 0.9rem;
-            padding: 5px 0;
-          }
-
-          .header-right {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            margin-top: 5px;
-          }
-
-          .header-right .btn {
-             display: flex;
-             width: 100%;
-             text-align: center;
-             margin-bottom: 10px;
-          }
-
-          .header-right .btn:last-child {
-             margin-bottom: 0;
-          }
-
-          .logged-in-area {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
-          }
-
-          .welcome-msg {
-            margin-bottom: 10px;
-            text-align: left;
-            width: 100%;
-            white-space: normal;
-          }
-
-          .logged-in-area button {
-             width: 100%;
-             margin-bottom: 10px;
-          }
-
-          .logged-in-area button:last-child {
-            margin-bottom: 0;
-          }
+        @media (max-width: 768px) {
+          .header-inner, .header-left, .logged-in-area { flex-direction: column; width: 100%; gap: 15px; }
+          .main-nav, .header-right { justify-content: center; width: 100%; }
+          .btn { width: 100%; max-width: 300px; }
         }
       `}</style>
     </div>

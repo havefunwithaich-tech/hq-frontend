@@ -348,8 +348,10 @@ export default function VideoListPage({ initialVideos, initialPageInfo, endpoint
   const [pageInfo, setPageInfo] = useState(initialPageInfo);
   const [loading, setLoading] = useState(false);
 
+  const canFetch = Boolean(endpoint);
+
   const fetchMoreFromServer = async () => {
-    if (!pageInfo.hasNextPage) return;
+    if (!pageInfo.hasNextPage || !canFetch) return;
     setLoading(true);
     try {
       const client = new GraphQLClient(endpoint);
@@ -408,14 +410,39 @@ export default function VideoListPage({ initialVideos, initialPageInfo, endpoint
 // SSG
 // ===============================================
 export async function getStaticProps() {
-  const endpoint = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
+  const endpoint = process.env.WP_GRAPHQL_URL || null;
+
+  // Log endpoint presence for debugging
+  console.log("[videos/getStaticProps] endpoint:", endpoint || "MISSING");
+
+  // If the endpoint is missing, skip fetching to avoid undefined serialization.
+  if (!endpoint) {
+    console.warn("[videos/getStaticProps] WP_GRAPHQL_URL is not set. Returning empty props.");
+    return {
+      props: {
+        initialVideos: [],
+        initialPageInfo: { hasNextPage: false, endCursor: null },
+        endpoint: null
+      },
+      revalidate: 60
+    };
+  }
+
   const client = new GraphQLClient(endpoint);
   try {
     const data = await client.request(GET_VIDEO_LIST, {
       first: FETCH_BATCH_SIZE,
       after: null
     });
-    const processedNodes = processData(data.portfolios.nodes);
+
+    // Log to server console for debugging
+    const nodes = data?.portfolios?.nodes || [];
+    console.log("[videos/getStaticProps] fetched", nodes.length, "items");
+    if (nodes.length) {
+      console.log("[videos/getStaticProps] sample", nodes.slice(0, 3));
+    }
+
+    const processedNodes = processData(nodes);
     return {
       props: {
         initialVideos: processedNodes,
@@ -425,17 +452,7 @@ export async function getStaticProps() {
       revalidate: 60
     };
   } catch (err) {
-    console.error("GQL fetch error in /videos:", err);
-    // endpointを渡す代わりに、その値（文字列）自体を渡すか、
-    // あるいは undefined を null に置き換えます。
-    const safeEndpoint = endpoint || null; 
-
-    return { 
-        props: { 
-            initialVideos: [], 
-            initialPageInfo: { hasNextPage: false, endCursor: null }, // 安全な初期値
-            endpoint: safeEndpoint 
-        } 
-    };
+    console.error("[videos/getStaticProps] fetch error:", err);
+    return { props: { initialVideos: [], initialPageInfo: { hasNextPage: false, endCursor: null }, endpoint } };
   }
 }
