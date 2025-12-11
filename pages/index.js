@@ -2,25 +2,31 @@ import Head from 'next/head';
 import StaffSection from '../components/StaffSection';
 import Link from 'next/link';
 
-// GraphQLクエリ: excerpt ではなく content (本文) を取得します
+// GraphQLクエリ
 const GET_HOME_DATA = `{ 
   posts(first: 3, where: { orderby: { field: DATE, order: DESC }, stati: [PUBLISH] }) { 
     nodes { title slug date content } 
   } 
 }`;
 
-// ★改良版: HTMLタグ除去 ＆ 100文字でカットする関数
+// ① HTMLタグ除去 ＆ 100文字抜粋
 const createSnippet = (html, length = 100) => {
   if (!html) return "";
-  // 1. HTMLタグを除去
   let text = html.replace(/<[^>]+>/g, '');
-  // 2. 特殊文字の変換
   text = text.replace(/&#8230;/g, '...');   
   text = text.replace(/&amp;/g, '&');
-  // 3. 改行や連続スペースを整理
   text = text.replace(/\s+/g, ' ').trim();
-  // 4. 指定文字数でカット
   return text.length > length ? text.substring(0, length) + '...' : text;
+};
+
+// ② タイトル解析
+const parseTitle = (rawTitle) => {
+  let title = rawTitle;
+  let isRecommended = false;
+  if (title.includes('(SSS)') || title.includes('[SSS]')) {
+    isRecommended = true;
+  }
+  return { cleanTitle: title.trim(), isRecommended };
 };
 
 const LaunchBanner = () => (
@@ -33,68 +39,129 @@ const LaunchBanner = () => (
 
 const NotificationSection = ({ latestPosts }) => {
   return (
-    <section className="news-container">
-      <h2 className="section-title">RECENT NEWS & UPDATES</h2>
-
-      {/* グリッドコンテナ */}
-      <div className="articles-grid">
+    <section className="news-section">
+      <div className="layout-container center-layout">
         
-        {/* === CARD 1: 固定記事 (HQ REPORT) === */}
-        <article className="news-card fixed-card">
-          <div className="card-badge">HQ REPORT</div>
-          <div className="card-content">
-            <span className="news-date">DEC 11, 2025</span>
-            <h3 className="news-title">
-              <Link href="/site-built-in-2-weeks">
-                SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN
-              </Link>
-            </h3>
-            <p className="news-excerpt">
-              Detailed technical report on how we built this entire platform in just 14 days using AI-human collaboration. Discover the stack and philosophy behind the speed.
+        {/* === 上部: PHILOSOPHY & RANKING === */}
+        <div className="center-header">
+          
+          <div className="header-block philosophy-block">
+            <h2 className="center-title">PHILOSOPHY</h2>
+            <p className="center-desc">
+              <strong>havefunwithAIch</strong> is a laboratory for Human-AI symbiosis.<br/>
+              Don't just read. <span style={{ color: '#00ccff' }}>Seed your mind.</span>
             </p>
-            <span className="read-more">Read Report &rarr;</span>
           </div>
-        </article>
+<div style={{ height: '20px' }}></div>
+          {/* ここでCSSにより自動的に間隔（80px）が空きます */}
 
-        {/* === CARD 2: WordPress最新記事 (Loop) === */}
-        {latestPosts?.map((post) => (
-          <article className="news-card" key={post.slug}>
-            <div className="card-content">
-              <span className="news-date">
-                {new Date(post.date)
-                  .toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
-                  .toUpperCase()}
-              </span>
-              <h3 className="news-title">
-                <Link href={`/articles/${post.slug}`}>
-                  {post.title}
-                </Link>
-              </h3>
-              {/* ★ここで本文から100文字抜粋を作って表示 */}
-              <p className="news-excerpt">
-                {createSnippet(post.content, 100)}
-              </p>
-              <span className="read-more">Read Article &rarr;</span>
-            </div>
-          </article>
-        ))}
-
-        {/* === CARD 3: 固定記事 (POLICY) === */}
-        <article className="news-card policy-card">
-          <div className="card-badge badge-red">IMPORTANT</div>
-          <div className="card-content">
-            <span className="news-date">DEC 02, 2025</span>
-            <h3 className="news-title">
-              <Link href="/veil">
-                [POLICY] Articles Now Exclusive for Members
-              </Link>
-            </h3>
-            <p className="news-excerpt">
-              Important update regarding our content access policy. Some in-depth articles are now exclusive to Veil members.
-            </p>
-            <span className="read-more">Check Policy &rarr;</span>
+          <div className="header-block ranking-block">
+            <h2 className="center-title">CONTENT RANKING SYSTEM</h2>
+            <ul className="center-legend-list">
+              <li className="legend-item">
+                <h3><span className="badge-sample sss">SSS</span></h3>
+                <div className="legend-info">
+                  <span className="legend-head">PUBLICATION LEVEL: </span>
+                  <span className="legend-sub">Definitive guides worthy of publication.</span>
+                </div>
+              </li>
+              <li className="legend-item">
+                <h3><span className="badge-sample ss">SS</span></h3>
+                <div className="legend-info">
+                  <span className="legend-head">WORLD UNIQUE: </span>
+                  <span className="legend-sub">Methodologies found nowhere else.</span>
+                </div>
+              </li>
+              <li className="legend-item">
+                <h3><span className="badge-sample s">S</span></h3>
+                <div className="legend-info">
+                  <span className="legend-head">INDUSTRY ELITE: </span>
+                  <span className="legend-sub">Rare knowledge even among professionals.</span>
+                </div>
+              </li>
+              <li className="legend-item">
+                <h3><span className="badge-sample a">A</span></h3>
+                <div className="legend-info">
+                  <span className="legend-head">EXPERT ONLY: </span>
+                  <span className="legend-sub">Specialized data not for the general public.</span>
+                </div>
+              </li>
+            </ul>
           </div>
-        </article>
+        </div>
+<div style={{ height: '20px' }}></div>
+        {/* === 下部: RECENT NEWS === */}
+        <div className="center-main">
+          <h2 className="section-title">RECENT NEWS & UPDATES</h2>
+
+          <div className="articles-list center-list">
+            
+            {/* 固定記事 */}
+            <article className="news-card fixed-card">
+              <div className="card-badge">HQ REPORT</div>
+              <div className="card-content center-content">
+                <span className="news-date">DEC 11, 2025</span>
+                <h3 className="news-title">
+                  <Link href="/site-built-in-2-weeks">
+                    SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN
+                  </Link>
+                </h3>
+                <p className="news-excerpt">
+                  Detailed technical report on how we built this entire platform in just 14 days using AI-human collaboration. Discover the stack and philosophy behind the speed.
+                </p>
+                <span className="read-more center-read-more">Read Report &rarr;</span>
+              </div>
+            </article>
+
+            {/* 最新記事ループ */}
+            {latestPosts?.map((post) => {
+              const { cleanTitle, isRecommended } = parseTitle(post.title);
+              return (
+                <article 
+                  className={`news-card ${isRecommended ? 'gold-card' : ''}`} 
+                  key={post.slug}
+                >
+                  {isRecommended && (
+                    <div className="card-badge badge-recommend">RECOMMENDED!!</div>
+                  )}
+                  <div className="card-content center-content">
+                    <span className="news-date">
+                      {new Date(post.date)
+                        .toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+                        .toUpperCase()}
+                    </span>
+                    <h3 className="news-title">
+                      <Link href={`/articles/${post.slug}`}>
+                        {cleanTitle}
+                      </Link>
+                    </h3>
+                    <p className="news-excerpt">
+                      {createSnippet(post.content, 100)}
+                    </p>
+                    <span className="read-more center-read-more">Read Article &rarr;</span>
+                  </div>
+                </article>
+              );
+            })}
+
+            {/* POLICY */}
+            <article className="news-card policy-card">
+              <div className="card-badge badge-red">IMPORTANT</div>
+              <div className="card-content center-content">
+                <span className="news-date">DEC 02, 2025</span>
+                <h3 className="news-title">
+                  <Link href="/veil">
+                    [POLICY] Articles Now Exclusive for Members
+                  </Link>
+                </h3>
+                <p className="news-excerpt">
+                  Important update regarding our content access policy. Some in-depth articles are now exclusive to Veil members.
+                </p>
+                <span className="read-more center-read-more">Check Policy &rarr;</span>
+              </div>
+            </article>
+          </div>
+        </div>
 
       </div>
     </section>
@@ -119,14 +186,12 @@ export default function Home({ data }) {
           font-family: 'Helvetica Neue', Arial, sans-serif;
           min-height: 100vh;
           overflow-x: hidden;
-          text-align: left;
         }
         a { text-decoration: none; color: inherit; }
       `}</style>
 
       <LaunchBanner />
 
-      {/* HERO SECTION */}
       <section className="hero-section">
         <div className="hero-bg">
           <img src="/images/top-hero.jpg" alt="Hero" className="hero-img" />
@@ -143,7 +208,6 @@ export default function Home({ data }) {
       <NotificationSection latestPosts={latestPosts} />
       <StaffSection />
 
-      {/* FOOTER */}
       <footer className="site-footer">
         <div className="footer-links">
           <Link href="/about" className="footer-link">About This Site</Link>
@@ -157,148 +221,109 @@ export default function Home({ data }) {
       {/* === CSS === */}
       <style jsx>{`
         .main-container { background-color: #000; color: #fff; }
-
-        /* HERO Styles */
-        .hero-section {
-          position: relative;
-          width: 100%;
-          height: min(100vh, 720px);
-          min-height: 500px;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
+        
+        /* HERO */
+        .hero-section { position: relative; width: 100%; height: min(100vh, 720px); min-height: 500px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .hero-overlay {
-          position: absolute; inset: 0;
-          background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
-          z-index: 1;
-        }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%); z-index: 1; }
         .hero-content-wrapper { position: relative; z-index: 10; width: 100%; display: flex; justify-content: center; }
-        .hero-frame {
-          border: 3px solid rgba(255, 255, 255, 0.8);
-          padding: 40px 60px; text-align: center;
-          background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px);
-          max-width: 800px; width: 90%;
-        }
+        .hero-frame { border: 3px solid rgba(255, 255, 255, 0.8); padding: 40px 60px; text-align: center; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); max-width: 800px; width: 90%; }
         .hero-title { font-size: 3.5rem; margin: 0; font-weight: 800; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         .hero-subtitle { font-size: 1.2rem; margin-top: 20px; color: #ddd; letter-spacing: 0.2em; }
-        @media (max-width: 768px) {
-          .hero-title { font-size: 2rem; }
-          .hero-frame { padding: 30px 20px; }
+        @media (max-width: 768px) { .hero-title { font-size: 2rem; } .hero-frame { padding: 30px 20px; } }
+
+        /* === センターレイアウト設定 === */
+        .news-section { background-color: #000; padding: 80px 0; border-bottom: 1px solid #222; }
+        .layout-container.center-layout {
+          width: 100%; max-width: 800px;
+          margin: 0 auto; padding: 0 20px;
+          text-align: center;
+          display: flex; flex-direction: column; align-items: center;
         }
 
-        /* ====================== */
-        /* カードデザイン */
-        /* ====================== */
+        /* HEADER AREA (PHILOSOPHY & RANKING) */
+        .center-header { margin-bottom: 60px; width: 100%; }
+        
+        /* ★ここでブロック間の隙間を制御しています */
+        .header-block { margin-bottom: 80px; } 
+        .header-block:last-child { margin-bottom: 0; }
 
-        .news-container {
-          position: relative;
-          z-index: 5;          
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 60px 20px;
-          background-color: #000;
+        .center-title {
+          font-size: 0.9rem; letter-spacing: 0.2em; color: #666;
+          border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 25px;
+          text-transform: uppercase; display: inline-block;
         }
+        .center-desc { color: #aaa; line-height: 1.8; font-size: 1rem; }
 
+        /* RANKING LIST (English) */
+        .center-legend-list {
+          list-style: none; padding: 0; margin: 0 auto;
+          display: inline-flex; flex-direction: column; gap: 25px; /* リスト間隔を少し広げました */
+          text-align: left;
+        }
+        .legend-item { display: flex; align-items: center; gap: 15px; }
+        
+        .badge-sample { font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 4px; color: #000; min-width: 45px; text-align: center; }
+        .sss { background: #FFD700; border: 1px solid #fff; box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+        .ss  { background: #C0C0C0; } .s { background: #cd7f32; } .a { background: #00ccff; }
+        
+        .legend-info { display: flex; flex-direction: column; }
+        .legend-head { font-size: 0.8rem; font-weight: bold; color: #ccc; letter-spacing: 0.05em; }
+        .legend-sub { font-size: 0.75rem; color: #888; } 
+
+        /* MAIN AREA */
+        .center-main { width: 100%; }
         .section-title {
-          font-size: 1.8rem;
-          margin-bottom: 40px;
-          letter-spacing: 0.1em;
-          border-bottom: 1px solid #333;
-          padding-bottom: 10px;
-          color: #fff;
+          font-size: 1.8rem; margin-bottom: 40px; letter-spacing: 0.1em;
+          border-bottom: 1px solid #333; padding-bottom: 15px; color: #fff;
+          display: inline-block;
+        }
+        
+        .articles-list.center-list {
+          display: flex; flex-direction: column; gap: 30px; width: 100%;
         }
 
-        .articles-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 30px;
-          width: 100%;
-        }
-
+        /* CARD STYLES */
         .news-card {
-          /* 色はLayout.jsのGlobal CSSで制御されていますが、念のため指定 */
-          background-color: #222; 
-          border: 1px solid #444;
-          border-radius: 12px;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          position: relative;
+          background-color: #222; border: 1px solid #444; border-radius: 12px;
+          overflow: hidden; position: relative;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
-          margin-bottom: 0; 
+          text-align: center;
         }
+        .news-card:hover { background-color: #2a2a2a; border-color: #666; transform: translateY(-5px); }
+        .gold-card { border: 2px solid #FFD700 !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.15); }
 
-        .news-card:hover {
-           background-color: #2a2a2a;
-           border-color: #666;
-           transform: translateY(-5px);
-        }
-
-        /* バッジ */
         .card-badge {
-          position: absolute;
-          top: 15px; right: 15px;
-          background: #00ccff; color: #000;
-          font-size: 0.7rem; font-weight: bold;
-          padding: 4px 8px; border-radius: 4px;
-          z-index: 2;
+          position: absolute; top: 15px; right: 15px; background: #00ccff; color: #000;
+          font-size: 0.75rem; font-weight: 800; padding: 6px 12px; border-radius: 4px;
+          z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
         .badge-red { background: #ff4444; color: #fff; }
+        .badge-recommend {
+          background-color: #FFD700 !important; color: #000 !important; border: 2px solid #fff !important;
+          box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) !important; animation: flash 2s infinite; z-index: 101 !important;
+        }
+        @keyframes flash { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
 
-        .card-content {
-          padding: 25px;
-          display: flex; flex-direction: column;
-          height: 100%;
+        .card-content.center-content { padding: 30px; display: flex; flex-direction: column; align-items: center; }
+        .news-date { font-size: 0.85rem; color: #888; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; }
+        .news-title { font-size: 1.5rem; margin: 0 0 15px 0; line-height: 1.3; color: #fff; }
+        .news-title :global(a:hover) { color: #00ccff; text-decoration: underline; }
+        .news-excerpt { font-size: 1rem; color: #ccc; line-height: 1.6; margin-bottom: 25px; max-width: 90%; }
+        .center-read-more {
+          font-size: 0.9rem; font-weight: bold; color: #00ccff; text-transform: uppercase; letter-spacing: 1px;
+          display: inline-flex; align-items: center; margin-top: auto;
         }
-
-        .news-date {
-          font-size: 0.8rem; color: #888;
-          margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;
-        }
-
-        .news-title {
-          font-size: 1.3rem; margin: 0 0 15px 0;
-          line-height: 1.4; color: #fff;
-        }
-        
-        .news-title :global(a:hover) {
-          color: #00ccff;
-          text-decoration: underline;
-        }
-
-        .news-excerpt {
-          font-size: 0.95rem; color: #ccc;
-          line-height: 1.6; margin-bottom: 25px;
-          flex-grow: 1;
-          /* CSSによる行制限も残しておきます */
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .read-more {
-          font-size: 0.9rem; font-weight: bold;
-          color: #00ccff; text-transform: uppercase;
-          letter-spacing: 1px; margin-top: auto;
-          display: inline-flex; align-items: center;
-        }
-        
-        .fixed-card { border-left: 4px solid #00ccff; }
-        .policy-card { border-left: 4px solid #ff4444; }
+        .fixed-card { border-top: 4px solid #00ccff; }
+        .policy-card { border-top: 4px solid #ff4444; }
 
         /* FOOTER & BANNER */
-        .site-footer { padding: 40px 20px; background: #080808; text-align: center; border-top: 1px solid #222; margin-top: 60px; }
+        .site-footer { padding: 40px 20px; background: #080808; text-align: center; border-top: 1px solid #222; }
         .footer-links { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        .footer-link { color: #666; font-size: 0.9rem; }
-        .footer-link:hover { color: #fff; }
-        .separator { color: #444; }
-
+        .footer-link { color: #666; font-size: 0.9rem; } .footer-link:hover { color: #fff; } .separator { color: #444; }
         .launch-banner-section { background-color: #00ccff; text-align: center; padding: 12px 20px; }
-        .launch-banner-link { color: #000; font-weight: bold; font-size: 1rem; }
-        .banner-emoji { margin-right: 10px; }
+        .launch-banner-link { color: #000; font-weight: bold; font-size: 1rem; } .banner-emoji { margin-right: 10px; }
       `}</style>
     </div>
   );
