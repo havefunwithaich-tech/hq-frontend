@@ -1,4 +1,4 @@
-# HavefunwithAIch Official Site: Fully Built in 2 Weeks by AI and a Single Human
+# HavefunwithAIch Official Site: Fully Built in 2 Weeks by AI and a Single Human [SS]
 
 ## ■ Introduction — A New Reality of Creation
 

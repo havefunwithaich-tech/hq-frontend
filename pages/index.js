@@ -103,7 +103,7 @@ const NotificationSection = ({ latestPosts }) => {
                 <span className="news-date">DEC 11, 2025</span>
                 <h3 className="news-title">
                   <Link href="/site-built-in-2-weeks">
-                    SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN
+                    SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN [SS]
                   </Link>
                 </h3>
                 <p className="news-excerpt">
