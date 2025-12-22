@@ -1,11 +1,6 @@
-// pages/index.js
-
 import Head from 'next/head';
 import StaffSection from '../components/StaffSection';
 
-const BASE_ARTICLE_URL = 'https://www.havefunwithaich.com/articles';
-
-// ★修正: 画像に合わせて取得数を「3」に調整（Fixed + 3 Dynamic + Policy = 5枚構成）
 const GET_HOME_DATA = `{
   posts(first: 3, where: { orderby: { field: DATE, order: DESC }, status: PUBLISH }) {
     nodes { title slug date content }
@@ -29,7 +24,6 @@ const parseTitle = (rawTitle) => {
 
 const LaunchBanner = () => (
   <section className="launch-banner-section">
-    {/* ★修正: 確実な絶対パスへ復元 */}
     <a href="https://www.havefunwithaich.com/articles/launch-greeting" className="launch-banner-link">
       <span className="banner-emoji">🚀</span> MAJOR ANNOUNCEMENT: Official Site Relaunch & New Content Policy (Click to Read)
     </a>
@@ -88,13 +82,11 @@ const NotificationSection = ({ latestPosts }) => {
           <h2 className="section-title">RECENT NEWS & UPDATES</h2>
           <div className="articles-list center-list">
             
-            {/* HQ REPORT (Fixed Card) */}
             <article className="news-card fixed-card">
               <div className="card-badge">HQ REPORT</div>
               <div className="card-content center-content">
                 <span className="news-date">DEC 18, 2025</span>
                 <h3 className="news-title">
-                  {/* ★修正: 絶対パスへ復元 */}
                   <a href="https://www.havefunwithaich.com/release-note-havefunwithaich-v1-1">
                     Release Note havefunwithAIch v1.1 [S]
                   </a>
@@ -104,10 +96,8 @@ const NotificationSection = ({ latestPosts }) => {
               </div>
             </article>
 
-            {/* 最新記事ループ */}
             {latestPosts?.map((post) => {
               const { cleanTitle, isRecommended } = parseTitle(post.title);
-              // ★修正: articles 経由の絶対パスに変更（構成の正規化）
               const mainUrl = `https://www.havefunwithaich.com/articles/${post.slug}`;
               return (
                 <article className={`news-card ${isRecommended ? 'gold-card' : ''}`} key={post.slug}>
@@ -122,13 +112,11 @@ const NotificationSection = ({ latestPosts }) => {
               );
             })}
 
-            {/* HQ REPORT (Fixed Card) */}
             <article className="news-card fixed-card">
               <div className="card-badge">HQ REPORT</div>
               <div className="card-content center-content">
                 <span className="news-date">DEC 11, 2025</span>
                 <h3 className="news-title">
-                  {/* ★修正: 絶対パスへ復元 */}
                   <a href="https://www.havefunwithaich.com/site-built-in-2-weeks">
                     SITE FULLY BUILT IN 2 WEEKS BY AI + HUMAN [SS]
                   </a>
@@ -235,7 +223,6 @@ export default function Home({ data }) {
 }
 
 export async function getServerSideProps() {
-  // ★修正: 環境変数依存を排除し、確実なURLへ
   const endpoint = 'https://www.havefunwithaich.com/graphql';
   if (!endpoint) return { props: { data: null } };
   try {
@@ -243,14 +230,11 @@ export async function getServerSideProps() {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        // ★致命的な修正: User-Agentを追加。これがないとWAFに弾かれてデータが表示されません
         'User-Agent': 'Next.js-Client' 
       },
       body: JSON.stringify({ query: GET_HOME_DATA })
     });
     const raw = await res.text();
-    // レスポンス確認用ログ（必要なければ削除可）
-    // console.log("Response Length:", raw.length);
     const clean = raw.replace(/\u00a0/g, ' ').trim();
     const json = JSON.parse(clean);
     return { props: { data: json.data ?? null } };

@@ -70,8 +70,9 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
             </h1>
             <nav className="main-nav">
               <Link href="/" className="nav-link">HOME</Link>
-              <Link href="/videos" className="nav-link">VIDEOS</Link>
-              <a href="https://www.havefunwithaich.com/" className="nav-link">havefunwithAIch</a>
+              {/* ここをクリックすると /videos/index.js が発動し、最新動画へ即リダイレクトします */}
+              <Link href="/videos/portrait/" className="nav-link">Portrait</Link>
+              <Link href="/videos/landscape/" className="nav-link">Landscape</Link>
             </nav>
           </div>
           <div className="header-right">
@@ -95,13 +96,14 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
       </main>
 
       <footer className="site-footer">
-        <div className="layout-container" style={{ color: '#fff' }}>
-          © {new Date().getFullYear()} {title}. All rights reserved. | Built with Next.js & WP Headless
+        <div className="layout-container" style={{ color: '#666', fontSize: '0.8rem' }}>
+          {/* 技術情報を削除し、シンプルに */}
+          © {new Date().getFullYear()} {title}. All rights reserved.
         </div>
       </footer>
 
       <style jsx global>{`
-        body { background-color: #000; color: #fff; margin: 0; }
+        body { background-color: #000; color: #fff; margin: 0; font-family: sans-serif; }
         #site-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
         .layout-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
         .site-header { background-color: #1a1a1a; border-bottom: 1px solid #333; width: 100%; flex-shrink: 0; }
@@ -113,13 +115,14 @@ export default function Layout({ children, title = 'havefunwithAIch Headquarters
         .site-logo { margin: 0; font-size: 1.5rem; }
         .logo-link { color: #66ccff; text-decoration: none; font-weight: bold; }
         .main-nav { display: flex; gap: 20px; }
-        .nav-link { color: #ccc; text-decoration: none; font-weight: 500; }
+        .nav-link { color: #ccc; text-decoration: none; font-weight: 500; transition: color 0.2s; }
         .nav-link:hover { color: #fff; }
         .header-right, .logged-in-area { display: flex; align-items: center; gap: 15px; }
         .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; cursor: pointer; border: none; }
-        .btn-login { color: #fff; border: 1px solid #666 !important; }
+        .btn-login { color: #fff; border: 1px solid #666 !important; background: transparent; }
         .btn-join { background-color: #0070f3; color: #fff; font-weight: bold; }
-        .site-footer { background-color: #050505; border-top: 1px solid #333; padding: 40px 0; text-align: center; color: #666; }
+        .welcome-msg { font-size: 0.9rem; color: #aaa; }
+        .site-footer { background-color: #050505; border-top: 1px solid #333; padding: 40px 0; text-align: center; }
         @media (max-width: 768px) { .header-inner { flex-direction: column; gap: 15px; } }
       `}</style>
     </div>
